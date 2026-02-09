@@ -136,6 +136,37 @@ html{scroll-behavior:smooth}
 .pres-content-page .content-body th{background:#f1f5f9;text-align:left;padding:8px 12px;font-weight:600;border:1px solid #e2e8f0}
 .pres-content-page .content-body td{padding:8px 12px;border:1px solid #e2e8f0}
 
+/* Calendário Anual Visual */
+.year-calendar{background:#fff;border-radius:12px;padding:24px;margin:24px 0;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.year-calendar-header{text-align:center;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #f1f5f9}
+.year-calendar-title{font-size:28px;font-weight:800;color:#1e293b;margin-bottom:4px}
+.year-calendar-subtitle{font-size:13px;color:#64748b}
+.year-calendar-grid{display:grid;grid-template-columns:1fr 2fr;gap:32px;margin-top:20px}
+.year-calendar-events{display:flex;flex-direction:column;gap:20px}
+.cal-month-section{background:#fafafa;padding:12px;border-radius:8px;border-left:4px solid #f59e0b}
+.cal-month-title{font-size:14px;font-weight:700;color:#1e293b;margin-bottom:8px}
+.cal-event-item{background:#fff;padding:10px 12px;margin-bottom:6px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.05);font-size:12px;line-height:1.6}
+.cal-event-date{display:inline-block;background:#f59e0b;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;font-size:11px;margin-bottom:4px}
+.cal-event-detail{color:#475569}
+.year-calendar-months{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.mini-calendar{background:#fff;border-radius:8px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.mini-calendar-header{text-align:center;font-weight:700;font-size:12px;color:#1e293b;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+.mini-calendar-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;font-size:10px}
+.mini-calendar-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:4px;color:#64748b;font-weight:500}
+.mini-calendar-day.weekend{background:#fafafa}
+.mini-calendar-day.today{background:#cbd5e1;color:#1e293b;font-weight:700}
+.mini-calendar-day.event{background:#f59e0b;color:#fff;font-weight:700}
+.mini-calendar-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
+.mini-calendar-weekday{text-align:center;font-size:9px;color:#94a3b8;font-weight:600}
+@media(max-width:1024px){
+.year-calendar-grid{grid-template-columns:1fr;gap:20px}
+.year-calendar-months{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:640px){
+.year-calendar-months{grid-template-columns:1fr}
+.year-calendar{padding:16px}
+}
+
 /* Gantt Divider */
 .pres-gantt-divider{background:linear-gradient(to bottom,#fff,#f8fafc);min-height:50vh;text-align:center}
 .pres-gantt-divider h2{font-size:28px;font-weight:800;color:#1e293b}
@@ -488,9 +519,101 @@ function initScrollNav() {
 // =====================================================================
 // RENDER HTML FROM META OBJECT
 // =====================================================================
+
+// Renderiza calendário visual anual
+function renderYearCalendar(calBlock, year = 2026) {
+  const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+  const monthShort = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+  const weekdayShort = ["D", "S", "T", "Q", "Q", "S", "S"];
+  const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+  // Extrair eventos e datas
+  const eventsByMonth = {};
+  const eventDates = new Set();
+
+  calBlock.entries.forEach(entry => {
+    const match = entry.header ? entry.header.match(/(\d{2})\/(\d{2})/) : null;
+    if (match) {
+      const day = parseInt(match[1]);
+      const month = parseInt(match[2]) - 1;
+      if (!eventsByMonth[month]) eventsByMonth[month] = [];
+      eventsByMonth[month].push({ date: `${match[1]}/${match[2]}`, day, header: entry.header, detail: entry.detail });
+      eventDates.add(`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`);
+    }
+  });
+
+  // HTML do calendário
+  let html = '<div class="year-calendar">';
+  html += '<div class="year-calendar-header">';
+  html += `<div class="year-calendar-title">Calendário ${year}</div>`;
+  html += '<div class="year-calendar-subtitle">Rede Kids · Cidade Viva Campina Grande</div>';
+  html += '</div>';
+
+  html += '<div class="year-calendar-grid">';
+
+  // Lado esquerdo: lista de eventos
+  html += '<div class="year-calendar-events">';
+  Object.keys(eventsByMonth).sort((a,b)=>a-b).forEach(monthIdx => {
+    const m = parseInt(monthIdx);
+    html += '<div class="cal-month-section">';
+    html += `<div class="cal-month-title">${monthNames[m]}</div>`;
+    eventsByMonth[m].forEach(evt => {
+      html += '<div class="cal-event-item">';
+      html += `<div class="cal-event-date">${evt.date}</div>`;
+      html += `<div class="cal-event-detail">${escapeHtml(evt.header.split('–')[1]?.trim() || evt.header)}<br><small>${escapeHtml(evt.detail)}</small></div>`;
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Lado direito: mini calendários
+  html += '<div class="year-calendar-months">';
+  for (let m = 0; m < 12; m++) {
+    const firstDay = new Date(year, m, 1).getDay();
+    const days = daysInMonth[m];
+
+    html += '<div class="mini-calendar">';
+    html += `<div class="mini-calendar-header">${monthShort[m]}</div>`;
+    html += '<div class="mini-calendar-weekdays">';
+    weekdayShort.forEach(wd => html += `<div class="mini-calendar-weekday">${wd}</div>`);
+    html += '</div>';
+    html += '<div class="mini-calendar-days">';
+
+    // Dias em branco antes do 1º dia
+    for (let i = 0; i < firstDay; i++) {
+      html += '<div class="mini-calendar-day"></div>';
+    }
+
+    // Dias do mês
+    const today = new Date();
+    for (let d = 1; d <= days; d++) {
+      const dateStr = `${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isToday = today.getFullYear() === year && today.getMonth() === m && today.getDate() === d;
+      const hasEvent = eventDates.has(dateStr);
+      const dayOfWeek = new Date(year, m, d).getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+      let classes = 'mini-calendar-day';
+      if (hasEvent) classes += ' event';
+      else if (isToday) classes += ' today';
+      else if (isWeekend) classes += ' weekend';
+
+      html += `<div class="${classes}">${d}</div>`;
+    }
+
+    html += '</div></div>';
+  }
+  html += '</div>';
+
+  html += '</div></div>';
+  return html;
+}
+
 function renderDocHtml(meta){
   if(!meta||!meta.blocks)return"";
   let html=meta.title?`<h3>${escapeHtml(meta.title)}</h3>`:"";
+  let prevBlock = null;
   meta.blocks.forEach(block=>{
     switch(block.type){
       case"h3":html+=`<h3>${escapeHtml(block.text)}</h3>`;break;
@@ -500,8 +623,16 @@ function renderDocHtml(meta){
       case"grid":html+=`<div class="info-grid">${block.fields.map(([l,v])=>`<span class="info-label">${escapeHtml(l)}:</span><span class="info-value">${v}</span>`).join("")}</div>`;break;
       case"note":html+=`<div class="note">${escapeHtml(block.text)}</div>`;break;
       case"table":html+=`<table><tr>${block.headers.map(h=>`<th>${escapeHtml(h)}</th>`).join("")}</tr>${block.rows.map(row=>`<tr>${row.map(c=>`<td>${escapeHtml(c)}</td>`).join("")}</tr>`).join("")}</table>`;break;
-      case"cal":html+=block.entries.map(e=>(e.header?`<div class="cal-month">${escapeHtml(e.header)}</div>`:"")+`<div class="cal-entry">${escapeHtml(e.detail)}</div>`).join("");break;
+      case"cal":
+        // Se o bloco anterior é h4 "Calendário de Eventos", usa renderização visual
+        if(prevBlock && prevBlock.type === "h4" && prevBlock.text.includes("Calendário")){
+          html+=renderYearCalendar(block);
+        }else{
+          html+=block.entries.map(e=>(e.header?`<div class="cal-month">${escapeHtml(e.header)}</div>`:"")+`<div class="cal-entry">${escapeHtml(e.detail)}</div>`).join("");
+        }
+        break;
     }
+    prevBlock = block;
   });
   return html;
 }
