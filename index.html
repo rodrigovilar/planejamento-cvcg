@@ -336,21 +336,20 @@ function renderPresentation() {
   // 1. Hero
   container.appendChild(buildHeroPage());
 
-  // 2. Seções com seus grupos
-  // Fase 1: apenas CONECTAR (índice 0) com os 4 primeiros grupos
-  const sec = DATA[0]; // CONECTAR
-  container.appendChild(buildSectionTitlePage(sec, 0));
+  // 2. Seções para apresentação: CONECTAR e CRESCER
+  const sectionsToShow = ["CONECTAR", "CRESCER"];
 
-  // Calendários: Batismos, Ame & Sirva, Celebrações, Vigílias
-  const groupNames = [
-    "Turmas de Batismo",
-    "Encontros Ame & Sirva",
-    "Celebrações / Dias Especiais",
-    "Vigílias"
-  ];
-  groupNames.forEach(name => {
-    const grp = sec.groups.find(g => g.group === name);
-    if (grp) container.appendChild(buildGroupPage(sec, grp));
+  sectionsToShow.forEach(sectionName => {
+    const sec = DATA.find(s => s.section === sectionName);
+    if (!sec) return; // Pula se não encontrar
+
+    const secIdx = DATA.indexOf(sec);
+    container.appendChild(buildSectionTitlePage(sec, secIdx));
+
+    // Todos os grupos da seção
+    sec.groups.forEach(grp => {
+      container.appendChild(buildGroupPage(sec, grp));
+    });
   });
 
   // 3. Transição para o Gantt
