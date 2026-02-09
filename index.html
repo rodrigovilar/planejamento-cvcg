@@ -657,6 +657,24 @@ function renderYearCalendar(calBlock, groupName = "Grupo", year = 2026) {
         return;
       }
 
+      // Tenta formato intervalo "DD a DD –" (usa currentMonth)
+      const detailRangeMatch = entry.detail.match(/^(\d{1,2})\s+a\s+(\d{1,2})\s+[–-]/);
+      if (detailRangeMatch) {
+        const startDay = parseInt(detailRangeMatch[1]);
+        const endDay = parseInt(detailRangeMatch[2]);
+        if (!eventsByMonth[currentMonth]) eventsByMonth[currentMonth] = [];
+        eventsByMonth[currentMonth].push({
+          date: `${String(startDay).padStart(2,'0')} a ${String(endDay).padStart(2,'0')}/${String(currentMonth+1).padStart(2,'0')}`,
+          day: startDay,
+          header: entry.header || `${startDay} a ${endDay}/${String(currentMonth+1).padStart(2,'0')}`,
+          detail: entry.detail
+        });
+        for (let d = startDay; d <= endDay; d++) {
+          eventDates.add(`${year}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
+        }
+        return;
+      }
+
       // Tenta formato "DD –" (usa currentMonth)
       const detailDayMatch = entry.detail.match(/^(\d{1,2})\s+[–-]/);
       if (detailDayMatch) {
