@@ -141,13 +141,13 @@ html{scroll-behavior:smooth}
 .year-calendar-header{text-align:center;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #f1f5f9}
 .year-calendar-title{font-size:28px;font-weight:800;color:#1e293b;margin-bottom:4px}
 .year-calendar-subtitle{font-size:13px;color:#64748b}
-.year-calendar-grid{display:grid;grid-template-columns:1fr 2fr;gap:32px;margin-top:20px}
-.year-calendar-events{display:flex;flex-direction:column;gap:20px}
-.cal-month-section{background:#fafafa;padding:12px;border-radius:8px;border-left:4px solid #f59e0b}
-.cal-month-title{font-size:14px;font-weight:700;color:#1e293b;margin-bottom:8px}
-.cal-event-item{background:#fff;padding:10px 12px;margin-bottom:6px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.05);font-size:12px;line-height:1.6}
-.cal-event-date{display:inline-block;background:#f59e0b;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;font-size:11px;margin-bottom:4px}
-.cal-event-detail{color:#475569}
+.year-calendar-grid{display:grid;grid-template-columns:280px 1fr;gap:32px;margin-top:20px}
+.year-calendar-events{background:#fafafa;border-radius:8px;padding:16px;max-height:700px;overflow-y:auto}
+.year-calendar-events h4{font-size:12px;font-weight:800;color:#64748b;margin:0 0 12px 0;text-transform:uppercase;letter-spacing:0.5px}
+.event-list-item{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid #e2e8f0}
+.event-list-item:last-child{border-bottom:none}
+.event-date-badge{flex-shrink:0;background:#f59e0b;color:#fff;padding:3px 8px;border-radius:5px;font-weight:700;font-size:10px;min-width:48px;text-align:center;line-height:1.4}
+.event-text{flex:1;font-size:11px;color:#475569;line-height:1.5;font-weight:500}
 .year-calendar-months{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .mini-calendar{background:#fff;border-radius:8px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .mini-calendar-header{text-align:center;font-weight:700;font-size:12px;color:#1e293b;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f1f5f9}
@@ -160,9 +160,12 @@ html{scroll-behavior:smooth}
 .mini-calendar-weekday{text-align:center;font-size:9px;color:#94a3b8;font-weight:600}
 @media(max-width:1024px){
 .year-calendar-grid{grid-template-columns:1fr;gap:20px}
+.year-calendar-events{max-height:400px}
 .year-calendar-months{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:640px){
+.year-calendar-grid{grid-template-columns:1fr}
+.year-calendar-events{max-height:300px}
 .year-calendar-months{grid-template-columns:1fr}
 .year-calendar{padding:16px}
 }
@@ -641,18 +644,28 @@ function renderYearCalendar(calBlock, groupName = "Grupo", year = 2026) {
 
   html += '<div class="year-calendar-grid">';
 
-  // Lado esquerdo: lista de eventos
+  // Lado esquerdo: lista compacta de eventos
   html += '<div class="year-calendar-events">';
-  Object.keys(eventsByMonth).sort((a,b)=>a-b).forEach(monthIdx => {
-    const m = parseInt(monthIdx);
-    html += '<div class="cal-month-section">';
-    html += `<div class="cal-month-title">${monthNames[m]}</div>`;
-    eventsByMonth[m].forEach(evt => {
-      html += '<div class="cal-event-item">';
-      html += `<div class="cal-event-date">${evt.date}</div>`;
-      html += `<div class="cal-event-detail">${escapeHtml(evt.header.split('–')[1]?.trim() || evt.header)}<br><small>${escapeHtml(evt.detail)}</small></div>`;
-      html += '</div>';
+  html += '<h4>Eventos do Ano</h4>';
+
+  // Coletar todos os eventos e ordenar por data
+  const allEvents = [];
+  Object.keys(eventsByMonth).forEach(monthIdx => {
+    eventsByMonth[monthIdx].forEach(evt => {
+      allEvents.push({ month: parseInt(monthIdx), ...evt });
     });
+  });
+  allEvents.sort((a, b) => {
+    if (a.month !== b.month) return a.month - b.month;
+    return a.day - b.day;
+  });
+
+  // Renderizar lista simples
+  allEvents.forEach(evt => {
+    html += '<div class="event-list-item">';
+    html += `<div class="event-date-badge">${evt.date}</div>`;
+    const eventText = evt.detail.replace(/^\d{1,2}\/\d{2}\s*[–-]\s*/, '').replace(/^\d{1,2}\s*[–-]\s*/, '');
+    html += `<div class="event-text">${escapeHtml(eventText)}</div>`;
     html += '</div>';
   });
   html += '</div>';
