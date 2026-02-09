@@ -521,7 +521,7 @@ function initScrollNav() {
 // =====================================================================
 
 // Renderiza calendário visual anual
-function renderYearCalendar(calBlock, year = 2026) {
+function renderYearCalendar(calBlock, groupName = "Grupo", year = 2026) {
   const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
   const monthShort = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
   const weekdayShort = ["D", "S", "T", "Q", "Q", "S", "S"];
@@ -576,7 +576,7 @@ function renderYearCalendar(calBlock, year = 2026) {
   let html = '<div class="year-calendar">';
   html += '<div class="year-calendar-header">';
   html += `<div class="year-calendar-title">Calendário ${year}</div>`;
-  html += '<div class="year-calendar-subtitle">Rede Kids · Cidade Viva Campina Grande</div>';
+  html += `<div class="year-calendar-subtitle">${groupName} · Cidade Viva Campina Grande</div>`;
   html += '</div>';
 
   html += '<div class="year-calendar-grid">';
@@ -656,7 +656,7 @@ function renderDocHtml(meta){
       case"cal":
         // Se o bloco anterior é h4 "Calendário de Eventos", usa renderização visual
         if(prevBlock && prevBlock.type === "h4" && prevBlock.text.includes("Calendário")){
-          html+=renderYearCalendar(block);
+          html+=renderYearCalendar(block, meta.title || "Grupo");
         }else{
           html+=block.entries.map(e=>(e.header?`<div class="cal-month">${escapeHtml(e.header)}</div>`:"")+`<div class="cal-entry">${escapeHtml(e.detail)}</div>`).join("");
         }
