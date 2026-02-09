@@ -542,7 +542,7 @@ function renderYearCalendar(calBlock, groupName = "Grupo", year = 2026) {
     if (monthNameMatch) {
       const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
       currentMonth = monthNames.findIndex(m => m.toLowerCase() === monthNameMatch[1].toLowerCase());
-      return;
+      // Não retorna - continua para processar o campo detail usando o currentMonth
     }
 
     // Tentar extrair data do header primeiro (formato Rede Kids)
