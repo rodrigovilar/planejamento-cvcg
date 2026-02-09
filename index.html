@@ -237,8 +237,9 @@ html,body{overflow-x:hidden;max-width:100vw}
 </div>
 
 <script>
-// Dados criptografados carregados de arquivo externo (AES-256-GCM, PBKDF2 100k iterações)
-const ENCRYPTED_DATA_PROMISE = fetch("data.enc.txt").then(r=>r.text()).then(t=>t.trim());
+// Dados carregados de arquivo JSON com valores criptografados individualmente (AES-256-GCM, PBKDF2 100k iterações)
+const DATA_PROMISE = fetch("data.json").then(r=>r.json());
+const ENC_PREFIX = "ENC:";
 
 async function deriveKey(password, salt) {
   const enc = new TextEncoder();
@@ -259,26 +260,34 @@ function b64toArr(b64) {
   return arr;
 }
 
+async function decryptValue(key, encStr) {
+  const raw = b64toArr(encStr.slice(ENC_PREFIX.length));
+  const iv = raw.slice(0, 12);
+  const ct = raw.slice(12);
+  const dec = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ct);
+  return new TextDecoder().decode(dec);
+}
+
+async function decryptTree(node, key) {
+  if (typeof node === 'string' && node.startsWith(ENC_PREFIX))
+    return decryptValue(key, node);
+  if (Array.isArray(node))
+    return Promise.all(node.map(n => decryptTree(n, key)));
+  if (node !== null && typeof node === 'object') {
+    const entries = Object.entries(node);
+    const vals = await Promise.all(entries.map(([,v]) => decryptTree(v, key)));
+    return Object.fromEntries(entries.map(([k], i) => [k, vals[i]]));
+  }
+  return node;
+}
+
 async function decryptData(password) {
-  const ENCRYPTED_DATA = await ENCRYPTED_DATA_PROMISE;
-  const parts = ENCRYPTED_DATA.split(":");
-  const salt = b64toArr(parts[0]);
-  const iv = b64toArr(parts[1]);
-  const tag = b64toArr(parts[2]);
-  const ciphertext = b64toArr(parts[3]);
-
-  // Concatenar ciphertext + tag (Web Crypto espera tag no final)
-  const combined = new Uint8Array(ciphertext.length + tag.length);
-  combined.set(ciphertext);
-  combined.set(tag, ciphertext.length);
-
+  const envelope = await DATA_PROMISE;
+  const salt = b64toArr(envelope.salt);
   const key = await deriveKey(password, salt);
-  const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv },
-    key,
-    combined
-  );
-  return new TextDecoder().decode(decrypted);
+  const test = await decryptValue(key, envelope.verify);
+  if (test !== "CVCG2026") throw new Error("Senha incorreta");
+  return decryptTree(envelope.data, key);
 }
 
 // DATA global — preenchido após descriptografia
@@ -290,17 +299,15 @@ async function doUnlock() {
   errEl.textContent = "";
 
   // Descriptografia — erros aqui significam senha incorreta
-  let json;
   try {
-    json = await decryptData(pwd);
+    DATA = await decryptData(pwd);
   } catch(e) {
     errEl.textContent = "Senha incorreta.";
     document.getElementById("pwdInput").select();
     return false;
   }
 
-  // Parsing e rendering — erros aqui são bugs, não senha errada
-  DATA = JSON.parse(json);
+  // Rendering — erros aqui são bugs, não senha errada
   document.getElementById("lockScreen").style.display = "none";
 
   // Apresentação scroll-based
