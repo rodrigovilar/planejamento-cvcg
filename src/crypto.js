@@ -48,7 +48,9 @@
       const key = await deriveKey(password, salt);
       const test = await decryptValue(key, envelope.verify);
       if (test !== "CVCG2026") throw new Error("Senha incorreta");
-      return decryptTree(envelope.data, key);
+      const data = await decryptTree(envelope.data, key);
+      assertDecryptedDataModel(data);
+      return data;
     }
 
     // DATA global — preenchido após descriptografia
@@ -63,7 +65,9 @@
       try {
         DATA = await decryptData(pwd);
       } catch (e) {
-        errEl.textContent = "Senha incorreta.";
+        errEl.textContent = e && e.name === "DataValidationError"
+          ? "Dados inválidos (formato do arquivo)."
+          : "Senha incorreta.";
         document.getElementById("pwdInput").select();
         return false;
       }

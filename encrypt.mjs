@@ -4,6 +4,7 @@
 
 import { webcrypto } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
+import { assertPlanningData } from './data-schema.mjs';
 
 const crypto = webcrypto;
 const { subtle } = crypto;
@@ -105,6 +106,8 @@ async function encryptTree(node, key) {
 console.log("Descriptografando data.enc.txt...");
 const data = await decryptOldFormat(PASSWORD);
 console.log(`OK: ${data.length} seções descriptografadas.`);
+const validation = assertPlanningData(data);
+console.log(`Modelo validado: ${validation.summary.sections} seções, ${validation.summary.groups} grupos, ${validation.summary.items} itens.`);
 
 console.log("Gerando nova chave...");
 const newSalt = crypto.getRandomValues(new Uint8Array(16));

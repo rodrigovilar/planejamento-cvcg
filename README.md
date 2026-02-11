@@ -12,6 +12,7 @@ Aplicacao front-end estatica com desbloqueio por senha e visualizacao em dois mo
 ### Dados
 - `data.json`: envelope com dados criptografados por campo
 - `encrypt.mjs`: utilitario para conversao/criptografia dos dados
+- `data-schema.mjs`: validacao estrutural do modelo de dados (pipeline Node)
 
 ### JS (`src/`)
 - `meta.js`: render de blocos de conteudo (inclui sanitizacao HTML basica)
@@ -22,6 +23,7 @@ Aplicacao front-end estatica com desbloqueio por senha e visualizacao em dois mo
 - `gantt-search.js`: busca e highlight de texto
 - `gantt-ui.js`: tooltip e modais
 - `gantt-render.js`: render principal do Gantt e linhas/marcadores
+- `data-schema.js`: validacao estrutural dos dados descriptografados (browser)
 - `crypto.js`: descriptografia no cliente e fluxo de unlock
 
 ### CSS (`styles/`)
