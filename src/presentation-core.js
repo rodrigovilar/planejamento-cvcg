@@ -1,6 +1,23 @@
     // =====================================================================
     // APRESENTAÇÃO SCROLL-BASED
     // =====================================================================
+    let calendarHeightSyncInitialized = false;
+    let calendarHeightSyncTimer = null;
+
+    function syncYearCalendarColumnHeights() {
+      document.querySelectorAll('.year-calendar').forEach(calendar => {
+        const eventsCol = calendar.querySelector('.year-calendar-events');
+        const monthsCol = calendar.querySelector('.year-calendar-months');
+        if (!eventsCol || !monthsCol) return;
+
+        const monthsHeight = Math.ceil(monthsCol.getBoundingClientRect().height);
+        if (monthsHeight > 0) {
+          eventsCol.style.maxHeight = `${monthsHeight}px`;
+        } else {
+          eventsCol.style.removeProperty('max-height');
+        }
+      });
+    }
 
     // Configura interatividade de highlight bidirecional nos calendários
     function setupCalendarHighlights() {
@@ -78,4 +95,15 @@
 
       // 4. Configurar highlights bidirecionais nos calendários
       setupCalendarHighlights();
+
+      // 5. Sincronizar altura da lista de eventos com a grade de meses
+      syncYearCalendarColumnHeights();
+      requestAnimationFrame(syncYearCalendarColumnHeights);
+      if (!calendarHeightSyncInitialized) {
+        calendarHeightSyncInitialized = true;
+        window.addEventListener("resize", () => {
+          clearTimeout(calendarHeightSyncTimer);
+          calendarHeightSyncTimer = setTimeout(syncYearCalendarColumnHeights, 120);
+        });
+      }
     }

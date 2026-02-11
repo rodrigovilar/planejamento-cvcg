@@ -306,13 +306,14 @@
       display: grid;
       grid-template-columns: 280px 1fr;
       gap: 32px;
-      align-items: stretch
+      align-items: start
     }
 
     .year-calendar-events {
       background: #fafafa;
       border-radius: 8px;
       padding: 16px;
+      max-height: min(72vh, 980px);
       overflow-y: auto;
       display: flex;
       flex-direction: column
@@ -376,14 +377,17 @@
     .year-calendar-months {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 16px
+      gap: 16px;
+      align-content: start;
+      grid-auto-rows: max-content
     }
 
     .mini-calendar {
       background: #fff;
       border-radius: 8px;
       padding: 12px;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, .06)
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+      align-self: start
     }
 
     .mini-calendar-header {
