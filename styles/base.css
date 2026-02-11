@@ -1,0 +1,22 @@
+/* =====================================================================
+   BASE STYLES
+   Variables, reset, and body styles
+   ===================================================================== */
+
+:root {
+    --label-w: 370px;
+    --row-h: 28px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    font-size: 13px;
+}
