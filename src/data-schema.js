@@ -1,4 +1,11 @@
 const META_BLOCK_TYPES = new Set(["h3", "h4", "p", "ul", "grid", "note", "table", "cal"]);
+const TIP_FIELD_LABEL_MAP = new Map([
+  ["Responsáveis", "Responsável"],
+  ["Líder", "Responsável"],
+  ["Datas", "Data"],
+  ["Dia", "Data"],
+  ["Dias", "Data"]
+]);
 
 function isObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -21,6 +28,51 @@ function isDateToken(token) {
 
 function addError(errors, path, message) {
   errors.push(`${path}: ${message}`);
+}
+
+function normalizeTipFieldLabel(label) {
+  if (typeof label !== "string") return label;
+  const trimmed = label.trim();
+  return TIP_FIELD_LABEL_MAP.get(trimmed) || trimmed;
+}
+
+function normalizePlanningData(data) {
+  const cloned = typeof structuredClone === "function"
+    ? structuredClone(data)
+    : JSON.parse(JSON.stringify(data));
+
+  if (!Array.isArray(cloned)) return cloned;
+
+  cloned.forEach(section => {
+    if (!isObject(section)) return;
+    if (typeof section.section === "string") section.section = section.section.trim();
+    if (!Array.isArray(section.groups)) return;
+
+    section.groups.forEach(group => {
+      if (!isObject(group)) return;
+      if (typeof group.group === "string") group.group = group.group.trim();
+      if (!Array.isArray(group.items)) return;
+
+      group.items.forEach(item => {
+        if (!isObject(item)) return;
+        if (typeof item.name === "string") item.name = item.name.trim();
+        if (isObject(item.tip)) {
+          if (typeof item.tip.title === "string") item.tip.title = item.tip.title.trim();
+          if (Array.isArray(item.tip.fields)) {
+            item.tip.fields = item.tip.fields.map(field => {
+              if (!Array.isArray(field) || field.length !== 2) return field;
+              const [label, value] = field;
+              const normalizedLabel = normalizeTipFieldLabel(label);
+              const normalizedValue = typeof value === "string" ? value.trim() : value;
+              return [normalizedLabel, normalizedValue];
+            });
+          }
+        }
+      });
+    });
+  });
+
+  return cloned;
 }
 
 function validateTip(tip, errors, path) {
@@ -200,7 +252,12 @@ function validatePlanningData(data) {
 }
 
 function assertDecryptedDataModel(data) {
-  const result = validatePlanningData(data);
+  return normalizeAndAssertDecryptedData(data);
+}
+
+function normalizeAndAssertDecryptedData(data) {
+  const normalized = normalizePlanningData(data);
+  const result = validatePlanningData(normalized);
   if (!result.ok) {
     const preview = result.errors.slice(0, 20).join("\n");
     const extra = result.errors.length > 20 ? `\n... +${result.errors.length - 20} erro(s)` : "";
@@ -208,5 +265,5 @@ function assertDecryptedDataModel(data) {
     err.name = "DataValidationError";
     throw err;
   }
-  return data;
+  return normalized;
 }

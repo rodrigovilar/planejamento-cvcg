@@ -1,5 +1,12 @@
     // Dados carregados de arquivo JSON com valores criptografados individualmente (AES-256-GCM, PBKDF2 100k iterações)
-    const DATA_PROMISE = fetch("data.json").then(r => r.json());
+    const DATA_PROMISE = fetch("data.json").then(r => {
+      if (!r.ok) {
+        const err = new Error(`Falha ao carregar data.json (${r.status})`);
+        err.name = "DataLoadError";
+        throw err;
+      }
+      return r.json();
+    });
     const ENC_PREFIX = "ENC:";
 
     async function deriveKey(password, salt) {
@@ -49,8 +56,7 @@
       const test = await decryptValue(key, envelope.verify);
       if (test !== "CVCG2026") throw new Error("Senha incorreta");
       const data = await decryptTree(envelope.data, key);
-      assertDecryptedDataModel(data);
-      return data;
+      return normalizeAndAssertDecryptedData(data);
     }
 
     // DATA global — preenchido após descriptografia
@@ -64,10 +70,15 @@
       // Descriptografia — erros aqui significam senha incorreta
       try {
         DATA = await decryptData(pwd);
+        if (typeof resetSearchCaches === "function") resetSearchCaches();
       } catch (e) {
-        errEl.textContent = e && e.name === "DataValidationError"
-          ? "Dados inválidos (formato do arquivo)."
-          : "Senha incorreta.";
+        if (e && e.name === "DataValidationError") {
+          errEl.textContent = "Dados inválidos (formato do arquivo).";
+        } else if (e && e.name === "DataLoadError") {
+          errEl.textContent = "Não foi possível carregar data.json.";
+        } else {
+          errEl.textContent = "Senha incorreta.";
+        }
         document.getElementById("pwdInput").select();
         return false;
       }

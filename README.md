@@ -12,7 +12,7 @@ Aplicacao front-end estatica com desbloqueio por senha e visualizacao em dois mo
 ### Dados
 - `data.json`: envelope com dados criptografados por campo
 - `encrypt.mjs`: utilitario para conversao/criptografia dos dados
-- `data-schema.mjs`: validacao estrutural do modelo de dados (pipeline Node)
+- `data-schema.mjs`: validacao estrutural + normalizacao de campos do modelo (pipeline Node)
 
 ### JS (`src/`)
 - `meta.js`: render de blocos de conteudo (inclui sanitizacao HTML basica)
@@ -23,7 +23,7 @@ Aplicacao front-end estatica com desbloqueio por senha e visualizacao em dois mo
 - `gantt-search.js`: busca e highlight de texto
 - `gantt-ui.js`: tooltip e modais
 - `gantt-render.js`: render principal do Gantt e linhas/marcadores
-- `data-schema.js`: validacao estrutural dos dados descriptografados (browser)
+- `data-schema.js`: validacao estrutural + normalizacao de campos dos dados descriptografados (browser)
 - `crypto.js`: descriptografia no cliente e fluxo de unlock
 
 ### CSS (`styles/`)
@@ -46,3 +46,8 @@ A ordem no `index.html` e importante por dependencia global entre funcoes:
 
 ## Regressao funcional
 Use `REGRESSION_CHECKLIST.md` apos mudancas estruturais para validar que o comportamento permaneceu consistente.
+
+## Normalizacao de campos
+Durante a validacao, os campos de `tip.fields` sao normalizados para rótulos canônicos:
+- `Responsáveis` e `Líder` -> `Responsável`
+- `Datas`, `Dia`, `Dias` -> `Data`

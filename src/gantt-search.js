@@ -1,7 +1,16 @@
     // =====================================================================
     // BUSCA – pesquisa em todos os campos de dados
     // =====================================================================
+    let ITEM_SEARCH_CACHE = new WeakMap();
+    let GROUP_META_CACHE = new WeakMap();
+    let searchDebounceTimer = null;
+
     function normalize(s) { return (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+
+    function resetSearchCaches() {
+      ITEM_SEARCH_CACHE = new WeakMap();
+      GROUP_META_CACHE = new WeakMap();
+    }
 
     function textFromMeta(meta) {
       if (!meta) return "";
@@ -28,9 +37,20 @@
       return parts.join(" ");
     }
 
-    function itemMatches(item, q) { return normalize(textFromItem(item)).includes(q); }
+    function itemMatches(item, q) {
+      let cached = ITEM_SEARCH_CACHE.get(item);
+      if (!cached) {
+        cached = normalize(textFromItem(item));
+        ITEM_SEARCH_CACHE.set(item, cached);
+      }
+      return cached.includes(q);
+    }
     function groupMatches(grp, q) {
-      const metaText = normalize(textFromMeta(grp.meta));
+      let metaText = GROUP_META_CACHE.get(grp);
+      if (!metaText) {
+        metaText = normalize(textFromMeta(grp.meta));
+        GROUP_META_CACHE.set(grp, metaText);
+      }
       if (metaText.includes(q)) return "full";
       if (normalize(grp.group).includes(q)) return "full";
       const matchItems = grp.items.filter(it => itemMatches(it, q));
@@ -38,12 +58,17 @@
     }
 
     function onSearch(val) {
-      searchQuery = normalize(val.trim());
-      // Auto-expand when searching
-      if (searchQuery) { collapsed = {}; }
-      render();
+      const nextQuery = normalize(val.trim());
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        searchQuery = nextQuery;
+        // Auto-expand when searching
+        if (searchQuery) { collapsed = {}; }
+        render();
+      }, 80);
     }
     function clearSearch() {
+      clearTimeout(searchDebounceTimer);
       document.getElementById("searchInput").value = "";
       searchQuery = "";
       render();
