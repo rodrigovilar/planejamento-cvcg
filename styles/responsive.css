@@ -1,0 +1,106 @@
+    @media(max-width:1024px) {
+      .year-calendar-grid {
+        grid-template-columns: 1fr;
+        gap: 20px
+      }
+
+      .year-calendar-events {
+        max-height: 400px
+      }
+
+      .year-calendar-months {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+
+    @media(max-width:640px) {
+      .year-calendar-grid {
+        grid-template-columns: 1fr
+      }
+
+      .year-calendar-events {
+        max-height: 300px
+      }
+
+      .year-calendar-months {
+        grid-template-columns: 1fr
+      }
+
+      .year-calendar {
+        padding: 16px
+      }
+    }
+
+    @media(max-width:768px) {
+      .pres-page {
+        padding: 40px 20px
+      }
+
+      .pres-content-page {
+        padding: 60px 20px 40px
+      }
+
+      .pres-content-page .content-body .info-grid {
+        grid-template-columns: 1fr
+      }
+
+      .pres-hero .hero-stats {
+        flex-direction: column;
+        gap: 16px
+      }
+
+      .pres-hero .hero-title {
+        font-size: clamp(32px, 10vw, 48px)
+      }
+
+      .pres-hero .hero-year {
+        font-size: clamp(80px, 25vw, 140px);
+        right: 10px
+      }
+
+      .pres-section-title .section-name {
+        font-size: clamp(32px, 10vw, 56px)
+      }
+
+      .pres-section-title .section-watermark {
+        font-size: clamp(80px, 25vw, 160px)
+      }
+
+      .pres-content-page .content-header h2 {
+        font-size: 22px
+      }
+
+      .pres-content-page .content-body {
+        font-size: 13px
+      }
+
+      .pres-content-page .content-body table {
+        font-size: 11px;
+        display: block;
+        overflow-x: auto
+      }
+
+      .pres-gantt-divider {
+        display: none !important
+      }
+
+      #ganttSection {
+        display: none !important
+      }
+
+      #scrollNav {
+        right: 8px;
+        gap: 4px;
+        padding: 6px
+      }
+
+      .nav-dot {
+        width: 8px;
+        height: 8px
+      }
+
+      .nav-dot.section-dot {
+        width: 10px;
+        height: 10px
+      }
+    }
