@@ -61,18 +61,18 @@
       const nextQuery = normalize(val.trim());
       clearTimeout(searchDebounceTimer);
       searchDebounceTimer = setTimeout(() => {
-        searchQuery = nextQuery;
-        // Auto-expand when searching
-        if (searchQuery) { collapsed = {}; }
-        render();
-      }, 80);
-    }
-    function clearSearch() {
-      clearTimeout(searchDebounceTimer);
-      document.getElementById("searchInput").value = "";
-      searchQuery = "";
-      render();
-    }
+      searchQuery = nextQuery;
+      // Auto-expand when searching
+      if (searchQuery) { collapsed = {}; }
+      requestRender();
+    }, 80);
+  }
+  function clearSearch() {
+    clearTimeout(searchDebounceTimer);
+    document.getElementById("searchInput").value = "";
+    searchQuery = "";
+    requestRender();
+  }
 
     function highlightText(text, q) {
       if (!q) return escapeHtml(text);

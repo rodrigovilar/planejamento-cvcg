@@ -1,17 +1,60 @@
+    let monthHeaderTemplate = null;
+    let monthHeaderTemplateDayWidth = -1;
+    let monthCellsTemplate = null;
+    let monthCellsTemplateDayWidth = -1;
+    let legendHtmlCache = "";
+    let legendDataRef = null;
+
+    function getLegendHtml() {
+      if (legendDataRef !== DATA || !legendHtmlCache) {
+        legendDataRef = DATA;
+        legendHtmlCache = DATA.map(s => `<span class="legend-item"><span class="legend-dot" style="background:${s.color}"></span>${s.section}</span>`).join("") +
+          `<span class="legend-item" style="margin-left:12px">● Evento (clique p/ detalhes) &nbsp; ◆ Marco &nbsp; ▬ Intervalo &nbsp; 📄 Conteúdo do doc &nbsp; <em style="color:#94a3b8">itálico = sem data</em></span>`;
+      }
+      return legendHtmlCache;
+    }
+
+    function getMonthHeaderRow() {
+      if (!monthHeaderTemplate || monthHeaderTemplateDayWidth !== dayWidth) {
+        const row = document.createElement("div");
+        row.className = "month-header-row";
+        for (let m = 0; m < 12; m++) {
+          const mh = document.createElement("div");
+          mh.className = "month-header";
+          mh.style.width = monthWidth(m) + "px";
+          mh.textContent = MONTHS[m];
+          row.appendChild(mh);
+        }
+        monthHeaderTemplate = row;
+        monthHeaderTemplateDayWidth = dayWidth;
+      }
+      return monthHeaderTemplate.cloneNode(true);
+    }
+
+    function getMonthCellsFragment() {
+      if (!monthCellsTemplate || monthCellsTemplateDayWidth !== dayWidth) {
+        const frag = document.createDocumentFragment();
+        for (let m = 0; m < 12; m++) {
+          const c = document.createElement("div");
+          c.className = "month-cell";
+          c.style.width = monthWidth(m) + "px";
+          frag.appendChild(c);
+        }
+        monthCellsTemplate = frag;
+        monthCellsTemplateDayWidth = dayWidth;
+      }
+      return monthCellsTemplate.cloneNode(true);
+    }
+
     function render() {
       const labelsEl = document.getElementById("labels"), timelineEl = document.getElementById("timeline"), legendEl = document.getElementById("legend");
       labelsEl.innerHTML = ""; timelineEl.innerHTML = "";
       const tw = totalWidth();
       timelineEl.style.width = tw + "px";
 
-      legendEl.innerHTML = DATA.map(s => `<span class="legend-item"><span class="legend-dot" style="background:${s.color}"></span>${s.section}</span>`).join("") +
-        `<span class="legend-item" style="margin-left:12px">● Evento (clique p/ detalhes) &nbsp; ◆ Marco &nbsp; ▬ Intervalo &nbsp; 📄 Conteúdo do doc &nbsp; <em style="color:#94a3b8">itálico = sem data</em></span>`;
+      legendEl.innerHTML = getLegendHtml();
 
-      // Month headers (usa DOM para preservar handlers)
-      const mhRow = document.createElement("div");
-      mhRow.className = "month-header-row";
-      for (let m = 0; m < 12; m++) { const mh = document.createElement("div"); mh.className = "month-header"; mh.style.width = monthWidth(m) + "px"; mh.textContent = MONTHS[m]; mhRow.appendChild(mh); }
-      timelineEl.appendChild(mhRow);
+      timelineEl.appendChild(getMonthHeaderRow());
       const lblHeader = document.createElement("div");
       lblHeader.style.cssText = "height:24px;border-bottom:2px solid #cbd5e1;background:#e2e8f0;display:flex;align-items:center;padding-left:8px;font-weight:600;font-size:12px;color:#475569";
       lblHeader.textContent = "Atividade";
@@ -119,11 +162,7 @@
       d.className = "tl-row " + (cls || "");
       d.style.width = tw + "px";
       if (bg && cls === "section-row") d.style.background = bg + "15";
-      for (let m = 0; m < 12; m++) {
-        const c = document.createElement("div");
-        c.className = "month-cell"; c.style.width = monthWidth(m) + "px";
-        d.appendChild(c);
-      }
+      d.appendChild(getMonthCellsFragment());
       if (markers) {
         markers.forEach(mk => {
           const el = document.createElement("div");

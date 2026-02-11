@@ -93,7 +93,7 @@
       document.getElementById("ganttSection").style.display = "block";
 
       // Gantt chart
-      render();
+      requestRender();
 
       // Navegação por scroll
       initScrollNav();

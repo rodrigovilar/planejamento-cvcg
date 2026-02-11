@@ -20,9 +20,11 @@ Aplicacao front-end estatica com desbloqueio por senha e visualizacao em dois mo
 - `presentation-navigation.js`: navegacao por teclado e dots de scroll
 - `presentation-core.js`: montagem da apresentacao e highlights do calendario
 - `gantt-state.js`: estado e utilitarios de data/zoom/collapse
+  - inclui `requestRender()` com `requestAnimationFrame` para consolidar rerenders
 - `gantt-search.js`: busca e highlight de texto
 - `gantt-ui.js`: tooltip e modais
 - `gantt-render.js`: render principal do Gantt e linhas/marcadores
+  - inclui cache de legenda e templates de header/células mensais
 - `data-schema.js`: validacao estrutural + normalizacao de campos dos dados descriptografados (browser)
 - `crypto.js`: descriptografia no cliente e fluxo de unlock
 
