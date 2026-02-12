@@ -25,6 +25,8 @@
       const page = document.createElement("div");
       page.className = "pres-page pres-section-title";
       page.dataset.navLabel = sec.section;
+      page.dataset.section = sec.section;
+      page.dataset.sectionColor = sec.color;
 
       // Fundo com tom claro da cor da seção
       const r = parseInt(sec.color.slice(1, 3), 16), g = parseInt(sec.color.slice(3, 5), 16), b = parseInt(sec.color.slice(5, 7), 16);
@@ -44,6 +46,8 @@
       const page = document.createElement("div");
       page.className = "pres-page pres-content-page";
       page.dataset.navLabel = grp.group;
+      page.dataset.section = sec.section;
+      page.dataset.sectionColor = sec.color;
 
       // Header
       const header = document.createElement("div");
