@@ -147,6 +147,9 @@
       labelsEl.innerHTML = ""; timelineEl.innerHTML = "";
       const tw = totalWidth();
       timelineEl.style.width = tw + "px";
+      const hasRangeFilter = zoomMode === "range" && typeof zoomRangeStart === "number" && typeof zoomRangeEnd === "number";
+      const rangeStart = hasRangeFilter ? zoomRangeStart : -1;
+      const rangeEnd = hasRangeFilter ? zoomRangeEnd : -1;
 
       legendEl.innerHTML = getLegendHtml();
 
@@ -159,6 +162,32 @@
 
       const q = searchQuery;
       let matchCount = 0;
+      const dateEntryOverlapsRange = (ds) => {
+        if (!hasRangeFilter) return true;
+        if (typeof ds !== "string" || !ds) return false;
+        if (ds.includes(">")) {
+          const [a, b] = ds.split(">");
+          let start = dayOfYear(parseDate(a));
+          let end = dayOfYear(parseDate(b));
+          if (end < start) {
+            const tmp = start;
+            start = end;
+            end = tmp;
+          }
+          return start <= rangeEnd && end >= rangeStart;
+        }
+        const day = dayOfYear(parseDate(ds));
+        return day >= rangeStart && day <= rangeEnd;
+      };
+      const sectionInZoomRange = (sec) => (sec.groups || []).some(grp =>
+        ((grp.items || []).some(item =>
+          Array.isArray(item.dates) && item.dates.some(dateEntryOverlapsRange)
+        ))
+      );
+      const groupInZoomRange = (grp) =>
+        (grp.items || []).some(item =>
+          Array.isArray(item.dates) && item.dates.some(dateEntryOverlapsRange)
+        );
 
       DATA.forEach((sec, si) => {
         // Se buscando, verificar se a seção tem algum match
@@ -166,14 +195,16 @@
           const secHasMatch = sec.groups.some(g => groupMatches(g, q));
           if (!secHasMatch) return; // pula seção inteira
         }
-        const sC = collapsed["s:" + si];
+        const sectionAutoCollapsed = hasRangeFilter && !sectionInZoomRange(sec);
+        const sC = Boolean(collapsed["s:" + si]) || sectionAutoCollapsed;
         addLabel(labelsEl, sec.section, "section", sec.color, () => toggleSection(si), sC);
         addTlRow(timelineEl, tw, "section-row", sec.color, null);
         if (sC) return;
         sec.groups.forEach((grp, gi) => {
           const gMatch = q ? groupMatches(grp, q) : true;
           if (q && !gMatch) return; // pula grupo sem match
-          const gC = collapsed["g:" + si + ":" + gi];
+          const groupAutoCollapsed = hasRangeFilter && !groupInZoomRange(grp);
+          const gC = Boolean(collapsed["g:" + si + ":" + gi]) || groupAutoCollapsed;
           addLabel(labelsEl, grp.group, "group", sec.color, () => toggleGroup(si, gi), gC, false, grp.meta ? { color: sec.color, name: grp.group, meta: grp.meta } : null, q);
           addTlRow(timelineEl, tw, "group-row", null, null);
           if (gC) return;

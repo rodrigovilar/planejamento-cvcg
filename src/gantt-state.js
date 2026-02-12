@@ -8,6 +8,8 @@ let dayWidth = 3, collapsed = {};
 const MIN_DAY_WIDTH = 0.5;
 const MAX_DAY_WIDTH = 220;
 let zoomMode = "year";
+let zoomRangeStart = null;
+let zoomRangeEnd = null;
 let searchQuery = "";
 let renderFramePending = false;
 let yearZoomResizeTimer = null;
@@ -49,6 +51,8 @@ function updateResetZoomButton() {
 }
 function applyYearZoom() {
   zoomMode = "year";
+  zoomRangeStart = null;
+  zoomRangeEnd = null;
   dayWidth = fitDayWidth(365);
   updateResetZoomButton();
 }
@@ -60,6 +64,8 @@ function resetYearZoom() {
 }
 function zoom(dir) {
   zoomMode = "manual";
+  zoomRangeStart = null;
+  zoomRangeEnd = null;
   dayWidth = Math.max(MIN_DAY_WIDTH, Math.min(MAX_DAY_WIDTH, dayWidth + dir));
   updateResetZoomButton();
   requestRender();
@@ -69,6 +75,8 @@ function zoomToRange(startDayIdx, endDayIdx) {
   const end = Math.max(start, Math.min(364, endDayIdx));
   const dayCount = (end - start) + 1;
   zoomMode = "range";
+  zoomRangeStart = start;
+  zoomRangeEnd = end;
   const wrap = document.getElementById("chartWrap");
   dayWidth = fitDayWidth(dayCount);
   updateResetZoomButton();
