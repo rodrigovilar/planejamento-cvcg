@@ -99,6 +99,177 @@
       animation: bounce 2s infinite
     }
 
+    .dash-cards {
+      width: min(1320px, 96vw);
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 34px;
+      position: relative;
+      z-index: 2
+    }
+
+    .dash-cards.dash-section {
+      margin-top: 56px
+    }
+
+    .dash-card {
+      background: rgba(255, 255, 255, .12);
+      border: 1px solid rgba(255, 255, 255, .18);
+      backdrop-filter: blur(4px);
+      border-radius: 12px;
+      padding: 18px;
+      min-height: 220px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center
+    }
+
+    .dash-card-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: rgba(255, 255, 255, .78);
+      font-weight: 600;
+      text-align: center
+    }
+
+    .dash-value {
+      font-size: 32px;
+      line-height: 1;
+      margin-top: 8px;
+      font-weight: 800;
+      color: #fff
+    }
+
+    .dash-value small {
+      font-size: 16px;
+      opacity: .75
+    }
+
+    .dash-sub {
+      margin-top: 6px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, .8)
+    }
+
+    .dash-pie-card .dash-pie-wrap {
+      margin: 12px auto 0;
+      position: relative;
+      width: 96px;
+      height: 96px
+    }
+
+    .dash-pie {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, .35)
+    }
+
+    .dash-pie-center {
+      position: absolute;
+      inset: 16px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, .88);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      font-weight: 700
+    }
+
+    .dash-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 12px;
+      color: rgba(255, 255, 255, .86);
+      font-size: 11px;
+      align-items: center;
+      text-align: center
+    }
+
+    .dash-meta .meta-with-date b {
+      color: #22c55e
+    }
+
+    .dash-meta .meta-without-date b {
+      color: #ef4444
+    }
+
+    .dash-cloud-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center
+    }
+
+    .dash-cloud {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      align-content: center;
+      gap: 8px 12px;
+      min-height: 132px;
+      width: 100%
+    }
+
+    .dash-cloud .cloud-word {
+      font-weight: 700;
+      line-height: .92;
+      display: inline-block
+    }
+
+    .dash-cloud .cloud-word-vertical {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      letter-spacing: .02em
+    }
+
+    .dash-cloud-empty {
+      margin-top: 20px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, .7)
+    }
+
+    .dash-section {
+      margin-top: 64px;
+      width: min(1040px, 92vw)
+    }
+
+    .pres-section-title .dash-card {
+      background: rgba(255, 255, 255, .72);
+      border: 1px solid rgba(148, 163, 184, .22)
+    }
+
+    .pres-section-title .dash-card-title {
+      color: #64748b
+    }
+
+    .pres-section-title .dash-value,
+    .pres-section-title .dash-sub,
+    .pres-section-title .dash-meta {
+      color: #0f172a
+    }
+
+    .pres-section-title .dash-cloud span {
+      color: #1e293b
+    }
+
+    .pres-section-title .dash-cloud-empty {
+      color: #64748b
+    }
+
+    .pres-section-title .dash-pie-center {
+      background: #fff;
+      color: #0f172a;
+      border: 1px solid #e2e8f0
+    }
+
     @keyframes bounce {
 
       0%,
@@ -122,7 +293,9 @@
       font-size: clamp(48px, 8vw, 90px);
       font-weight: 900;
       letter-spacing: 3px;
-      line-height: 1.1
+      line-height: 1.1;
+      position: relative;
+      z-index: 2
     }
 
     .pres-section-title .section-subtitle {
