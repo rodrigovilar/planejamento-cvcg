@@ -73,12 +73,9 @@
 
     function renderWordCloud(words) {
       if (!words.length) return `<div class="dash-cloud-empty">Sem termos suficientes</div>`;
-      const palette = ["#2563eb", "#06b6d4", "#7c3aed", "#f59e0b", "#ef4444", "#ec4899", "#10b981", "#d97706"];
-      return `<div class="dash-cloud">${words.map((w, idx) => {
-        const color = palette[idx % palette.length];
-        const vertical = (idx % 7 === 0 || idx % 11 === 0) ? " cloud-word-vertical" : "";
-        return `<span class="cloud-word${vertical}" style="font-size:${w.size}px;color:${color}" title="${w.count} ocorrências">${escapeHtml(w.word)}</span>`;
-      }).join("")}</div>`;
+      const list = words.map(w => [w.word, w.count]);
+      const encoded = encodeURIComponent(JSON.stringify(list));
+      return `<div class="dash-cloud" data-words="${encoded}" aria-label="Nuvem de palavras"></div>`;
     }
 
     function renderDashboardCards(metrics, color, mode = "section", wordCloud = []) {

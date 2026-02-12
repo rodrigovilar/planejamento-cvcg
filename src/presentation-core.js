@@ -3,6 +3,65 @@
     // =====================================================================
     let calendarHeightSyncInitialized = false;
     let calendarHeightSyncTimer = null;
+    let dashboardCloudRenderTimer = null;
+
+    function renderDashboardWordClouds() {
+      const cloudHosts = document.querySelectorAll(".dash-cloud[data-words]");
+      if (!cloudHosts.length) return;
+
+      const palette = ["#2563eb", "#14b8a6", "#6d28d9", "#f59e0b", "#ef4444", "#ec4899", "#16a34a", "#d97706"];
+      cloudHosts.forEach(host => {
+        let parsed = [];
+        try {
+          parsed = JSON.parse(decodeURIComponent(host.dataset.words || "[]"));
+        } catch (_) {
+          parsed = [];
+        }
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+          host.innerHTML = `<div class="dash-cloud-empty">Sem termos suficientes</div>`;
+          return;
+        }
+
+        const width = Math.max(220, Math.floor(host.clientWidth));
+        const height = Math.max(140, Math.floor(host.clientHeight || 170));
+
+        if (typeof window.WordCloud !== "function") {
+          host.innerHTML = `<div class="dash-cloud-fallback">${parsed
+            .map(([word, count], idx) => `<span style="color:${palette[idx % palette.length]}" title="${count} ocorrências">${word}</span>`)
+            .join("")}</div>`;
+          return;
+        }
+
+        host.innerHTML = "";
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
+        host.appendChild(canvas);
+
+        window.WordCloud(canvas, {
+          list: parsed,
+          gridSize: Math.max(6, Math.round(width / 36)),
+          weightFactor: value => {
+            const numeric = Number(value) || 1;
+            return Math.max(16, Math.min(58, numeric * 6));
+          },
+          fontFamily: "Montserrat, Poppins, Nunito Sans, sans-serif",
+          color: (_, weight) => {
+            const idx = Math.max(0, Math.min(parsed.length - 1, Math.round(weight) - 1));
+            return palette[idx % palette.length];
+          },
+          rotateRatio: 0.18,
+          rotationSteps: 2,
+          minRotation: -Math.PI / 2,
+          maxRotation: Math.PI / 2,
+          backgroundColor: "rgba(0,0,0,0)",
+          drawOutOfBound: false,
+          shuffle: true
+        });
+      });
+    }
 
     function syncYearCalendarColumnHeights() {
       document.querySelectorAll('.year-calendar').forEach(calendar => {
@@ -117,7 +176,11 @@
       // 4. Configurar highlights bidirecionais nos calendários
       setupCalendarHighlights();
 
-      // 5. Sincronizar altura da lista de eventos com a grade de meses
+      // 5. Renderizar nuvens dos dashboards
+      renderDashboardWordClouds();
+      requestAnimationFrame(renderDashboardWordClouds);
+
+      // 6. Sincronizar altura da lista de eventos com a grade de meses
       syncYearCalendarColumnHeights();
       requestAnimationFrame(syncYearCalendarColumnHeights);
       if (!calendarHeightSyncInitialized) {
@@ -125,6 +188,8 @@
         window.addEventListener("resize", () => {
           clearTimeout(calendarHeightSyncTimer);
           calendarHeightSyncTimer = setTimeout(syncYearCalendarColumnHeights, 120);
+          clearTimeout(dashboardCloudRenderTimer);
+          dashboardCloudRenderTimer = setTimeout(renderDashboardWordClouds, 150);
         });
       }
     }

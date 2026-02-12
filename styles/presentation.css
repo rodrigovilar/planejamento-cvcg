@@ -208,26 +208,33 @@
 
     .dash-cloud {
       margin-top: 12px;
+      position: relative;
+      width: 100%;
+      min-height: 150px;
+      height: 170px;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .dash-cloud canvas {
+      width: 100%;
+      height: 100%;
+      display: block
+    }
+
+    .dash-cloud-fallback {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
       align-content: center;
       gap: 8px 12px;
-      min-height: 132px;
-      width: 100%
-    }
-
-    .dash-cloud .cloud-word {
+      font-size: 14px;
+      line-height: 1.1;
       font-weight: 700;
-      line-height: .92;
-      display: inline-block
-    }
-
-    .dash-cloud .cloud-word-vertical {
-      writing-mode: vertical-rl;
-      transform: rotate(180deg);
-      letter-spacing: .02em
+      width: 100%;
+      height: 100%
     }
 
     .dash-cloud-empty {
@@ -256,7 +263,7 @@
       color: #0f172a
     }
 
-    .pres-section-title .dash-cloud span {
+    .pres-section-title .dash-cloud-fallback span {
       color: #1e293b
     }
 
