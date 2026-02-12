@@ -93,7 +93,8 @@
       document.getElementById("ganttSection").style.display = "block";
 
       // Gantt chart
-      requestRender();
+      ensureYearZoomResizeHandler();
+      resetYearZoom();
 
       // Navegação por scroll
       initScrollNav();

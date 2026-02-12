@@ -4,6 +4,8 @@
     let weekHeaderTemplateDayWidth = -1;
     let monthCellsTemplate = null;
     let monthCellsTemplateDayWidth = -1;
+    let dayCellsTemplate = null;
+    let dayCellsTemplateDayWidth = -1;
     let legendHtmlCache = "";
     let legendDataRef = null;
     const MONTH_HEADER_HEIGHT = 24;
@@ -95,7 +97,7 @@
           wh.dataset.start = String(seg.start);
           wh.dataset.end = String(seg.end);
           wh.title = `Semana ${String(seg.week).padStart(2, "0")} (${formatDayIndex(seg.start)} a ${formatDayIndex(seg.end)})`;
-          wh.textContent = `S${String(seg.week).padStart(2, "0")}`;
+          wh.textContent = `${String(seg.week).padStart(2, "0")}`;
           row.appendChild(wh);
         });
         weekHeaderTemplate = row;
@@ -108,6 +110,21 @@
         cell.addEventListener("click", () => zoomToRange(start, end));
       });
       return row;
+    }
+
+    function getDayCellsFragment() {
+      if (!dayCellsTemplate || dayCellsTemplateDayWidth !== dayWidth) {
+        const frag = document.createDocumentFragment();
+        for (let d = 0; d < 365; d++) {
+          const c = document.createElement("div");
+          c.className = "day-cell";
+          c.style.width = `${dayWidth}px`;
+          frag.appendChild(c);
+        }
+        dayCellsTemplate = frag;
+        dayCellsTemplateDayWidth = dayWidth;
+      }
+      return dayCellsTemplate.cloneNode(true);
     }
 
     function getMonthCellsFragment() {
@@ -242,7 +259,7 @@
       d.className = "tl-row " + (cls || "");
       d.style.width = tw + "px";
       if (bg && cls === "section-row") d.style.background = bg + "15";
-      d.appendChild(getMonthCellsFragment());
+      d.appendChild(zoomMode === "range" ? getDayCellsFragment() : getMonthCellsFragment());
       if (markers) {
         markers.forEach(mk => {
           const el = document.createElement("div");
