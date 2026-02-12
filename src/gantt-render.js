@@ -1,9 +1,14 @@
     let monthHeaderTemplate = null;
     let monthHeaderTemplateDayWidth = -1;
+    let weekHeaderTemplate = null;
+    let weekHeaderTemplateDayWidth = -1;
     let monthCellsTemplate = null;
     let monthCellsTemplateDayWidth = -1;
     let legendHtmlCache = "";
     let legendDataRef = null;
+    const MONTH_HEADER_HEIGHT = 24;
+    const WEEK_HEADER_HEIGHT = 20;
+    const TIMELINE_HEADER_HEIGHT = MONTH_HEADER_HEIGHT + WEEK_HEADER_HEIGHT;
 
     function getLegendHtml() {
       if (legendDataRef !== DATA || !legendHtmlCache) {
@@ -14,6 +19,40 @@
       return legendHtmlCache;
     }
 
+    function getMonthStartDay(monthIdx) {
+      let total = 0;
+      for (let i = 0; i < monthIdx; i++) total += MONTH_DAYS[i];
+      return total;
+    }
+
+    function formatDayIndex(dayIdx) {
+      const dt = new Date(YEAR, 0, dayIdx + 1);
+      return `${String(dt.getDate()).padStart(2, "0")}/${String(dt.getMonth() + 1).padStart(2, "0")}`;
+    }
+
+    function getIsoWeekInfo(date) {
+      const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      const day = utcDate.getUTCDay() || 7;
+      utcDate.setUTCDate(utcDate.getUTCDate() + 4 - day);
+      const yearStart = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 1));
+      const week = Math.ceil((((utcDate - yearStart) / 86400000) + 1) / 7);
+      return { week, year: utcDate.getUTCFullYear() };
+    }
+
+    function getWeekSegments() {
+      const segments = [];
+      let cursor = 0;
+      while (cursor < 365) {
+        const dt = new Date(YEAR, 0, cursor + 1);
+        const mondayIndex = (dt.getDay() + 6) % 7;
+        const end = Math.min(364, cursor + (6 - mondayIndex));
+        const iso = getIsoWeekInfo(dt);
+        segments.push({ week: iso.week, year: iso.year, start: cursor, end });
+        cursor = end + 1;
+      }
+      return segments;
+    }
+
     function getMonthHeaderRow() {
       if (!monthHeaderTemplate || monthHeaderTemplateDayWidth !== dayWidth) {
         const row = document.createElement("div");
@@ -21,14 +60,54 @@
         for (let m = 0; m < 12; m++) {
           const mh = document.createElement("div");
           mh.className = "month-header";
+          const start = getMonthStartDay(m);
+          const end = start + MONTH_DAYS[m] - 1;
           mh.style.width = monthWidth(m) + "px";
+          mh.dataset.start = String(start);
+          mh.dataset.end = String(end);
+          mh.dataset.month = String(m + 1);
+          mh.title = `Zoom em ${MONTHS[m]} (${formatDayIndex(start)} a ${formatDayIndex(end)})`;
           mh.textContent = MONTHS[m];
           row.appendChild(mh);
         }
         monthHeaderTemplate = row;
         monthHeaderTemplateDayWidth = dayWidth;
       }
-      return monthHeaderTemplate.cloneNode(true);
+      const row = monthHeaderTemplate.cloneNode(true);
+      row.querySelectorAll(".month-header").forEach(cell => {
+        const start = Number(cell.dataset.start);
+        const end = Number(cell.dataset.end);
+        cell.addEventListener("click", () => zoomToRange(start, end));
+      });
+      return row;
+    }
+
+    function getWeekHeaderRow() {
+      if (!weekHeaderTemplate || weekHeaderTemplateDayWidth !== dayWidth) {
+        const row = document.createElement("div");
+        row.className = "week-header-row";
+        const segments = getWeekSegments();
+        segments.forEach(seg => {
+          const wh = document.createElement("div");
+          const size = (seg.end - seg.start + 1) * dayWidth;
+          wh.className = "week-header";
+          wh.style.width = `${size}px`;
+          wh.dataset.start = String(seg.start);
+          wh.dataset.end = String(seg.end);
+          wh.title = `Semana ${String(seg.week).padStart(2, "0")} (${formatDayIndex(seg.start)} a ${formatDayIndex(seg.end)})`;
+          wh.textContent = `S${String(seg.week).padStart(2, "0")}`;
+          row.appendChild(wh);
+        });
+        weekHeaderTemplate = row;
+        weekHeaderTemplateDayWidth = dayWidth;
+      }
+      const row = weekHeaderTemplate.cloneNode(true);
+      row.querySelectorAll(".week-header").forEach(cell => {
+        const start = Number(cell.dataset.start);
+        const end = Number(cell.dataset.end);
+        cell.addEventListener("click", () => zoomToRange(start, end));
+      });
+      return row;
     }
 
     function getMonthCellsFragment() {
@@ -55,8 +134,9 @@
       legendEl.innerHTML = getLegendHtml();
 
       timelineEl.appendChild(getMonthHeaderRow());
+      timelineEl.appendChild(getWeekHeaderRow());
       const lblHeader = document.createElement("div");
-      lblHeader.style.cssText = "height:24px;border-bottom:2px solid #cbd5e1;background:#e2e8f0;display:flex;align-items:center;padding-left:8px;font-weight:600;font-size:12px;color:#475569";
+      lblHeader.style.cssText = `height:${TIMELINE_HEADER_HEIGHT}px;border-bottom:2px solid #cbd5e1;background:#e2e8f0;display:flex;align-items:center;padding-left:8px;font-weight:600;font-size:12px;color:#475569`;
       lblHeader.textContent = "Atividade";
       labelsEl.appendChild(lblHeader);
 
@@ -113,10 +193,10 @@
       if (today.getFullYear() === YEAR) {
         const tx = dayOfYear(today) * dayWidth;
         const rows = timelineEl.querySelectorAll('.tl-row');
-        const h = 24 + rows.length * 28;
+        const h = TIMELINE_HEADER_HEIGHT + rows.length * 28;
         const todayDiv = document.createElement("div");
         todayDiv.className = "today-line";
-        todayDiv.style.cssText = `left:${tx}px;height:${h}px;top:24px`;
+        todayDiv.style.cssText = `left:${tx}px;height:${h}px;top:${TIMELINE_HEADER_HEIGHT}px`;
         const todayLbl = document.createElement("span");
         todayLbl.className = "today-label";
         todayLbl.textContent = "Hoje";
