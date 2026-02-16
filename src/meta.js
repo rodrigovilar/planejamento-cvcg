@@ -180,7 +180,30 @@
         const datesStr = evt.allDates.join(',');
         html += `<div class="event-list-item" data-event-id="${idx}" data-event-dates="${datesStr}">`;
         html += `<div class="event-date-badge">${evt.date}</div>`;
-        const eventText = evt.detail.replace(/^\d{1,2}\/\d{2}\s*[–-]\s*/, '').replace(/^\d{1,2}\s*[–-]\s*/, '');
+        const headerParts = String(evt.header || "").split(/\s+[–-]\s+/);
+        const headerTitle = headerParts.length > 1 ? headerParts.slice(1).join(" - ").trim() : "";
+        const detailText = String(evt.detail || "")
+          .replace(/^\d{1,2}\/\d{2}\s*[–-]\s*/, '')
+          .replace(/^\d{1,2}\s*[–-]\s*/, '')
+          .trim();
+
+        const normalizeCmp = text =>
+          String(text || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, "");
+
+        const hasHeaderInDetail =
+          headerTitle &&
+          detailText &&
+          normalizeCmp(detailText).includes(normalizeCmp(headerTitle));
+
+        let eventText = detailText || headerTitle || "Sem detalhes";
+        if (headerTitle && detailText && !hasHeaderInDetail) {
+          eventText = `${headerTitle} | ${detailText}`;
+        }
+
         html += `<div class="event-text">${escapeHtml(eventText)}</div>`;
         html += '</div>';
       });
